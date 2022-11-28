@@ -1,0 +1,59 @@
+version: "2"
+services:
+  # ------------------------------------------------------------- 公用配置 -------------------------------------------------------------
+  gogs:
+    container_name: "gogs"
+    image: gogs/gogs:0.12
+    ports:
+      # ssh 端口
+      - "10022:22"
+      # web 访问
+      - "8180:3000"
+    # ---- 映射本地文件到容器中，格式: 宿主地址:容器地址
+    volumes:
+      # 时区配置
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      # 部署文件 mkdir -p /data/apps/gogs
+      - /data/apps/gogs:/data
+    restart: unless-stopped
+    depends_on:
+      - gogs.mysql
+    networks:
+      public.network: # 自定义网络, 见最下方networks
+        ipv4_address: 172.19.2.10
+
+  # 数据库
+  gogs.mysql:
+    container_name: "gogs.mysql"
+    image: mysql:5.7.36
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - "13306:3306"
+    # ---- 映射本地文件到容器中，格式: 宿主地址:容器地址
+    volumes:
+      # 时区配置
+      - /etc/localtime:/etc/localtime:ro
+    mem_limit: 256m
+    environment:
+      # 数据库名称
+      MYSQL_DATABASE: gogs
+      # 数据库用户名
+      MYSQL_USER: gogs
+      # 密码，随机产生
+      MYSQL_PASSWORD: sPZAz7gTpEJLrYwi
+      # root 密码
+      MYSQL_ROOT_PASSWORD: DQqCzldqz8WTJEPH
+    ulimits:
+      nproc: 65535
+    restart: unless-stopped
+    networks:
+      public.network: # 自定义网络, 见最下方networks
+        ipv4_address: 172.19.2.11
+networks:
+  public.network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.19.2.0/24
