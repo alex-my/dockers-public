@@ -1,0 +1,133 @@
+version: "2"
+services:
+  # ------------------------------------ 目录准备 ------------------------------------
+  # mkdir /apps && cd /apps
+  # mkdir nginx
+  # mkdir -p mysql/data
+  # mkdir -p gogs/mysql
+  # mkdir -p gitea/mysql
+  # ---------------------------------------------------------------------------------
+
+  # -------------------------- nginx .5 --------------------------
+  all.nginx:
+    container_name: "all.nginx"
+    image: nginx:1.25.4-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      # nginx 配置文件
+      - /apps/nginx/conf.d:/etc/nginx/conf.d:ro
+      - /apps/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # ssl 证书
+      - /apps/nginx/ssl:/etc/nginx/ssl
+      # 日志
+      - /apps/nginx/logs/nginx:/var/log/nginx
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1g"
+    networks:
+      all.network: # 自定义网络, 见最下方networks
+        ipv4_address: 172.19.3.5
+
+  # -------------------------- mysql .11 --------------------------
+  all.mysql:
+    container_name: "all.mysql"
+    image: mysql:8.3.0
+    ports:
+      - "3306:3306"
+    # ---- 映射本地文件到容器中，格式: 宿主地址:容器地址
+    volumes:
+      # 时区配置
+      - /etc/localtime:/etc/localtime:ro
+      # 映射数据库数据文件夹(容器中的数据库文件地址见: my.conf中的 datadir 字段)
+      - /apps/mysql/data:/var/lib/mysql
+    environment:
+      # root 密码
+      MYSQL_ROOT_PASSWORD: LV5WuPgjRXtvq1n5
+    ulimits:
+      nproc: 65535
+    restart: unless-stopped
+    networks:
+      all.network: # 自定义网络, 见最下方networks
+        ipv4_address: 172.19.3.11
+
+  # -------------------------- TODO redis .16 --------------------------
+  # -------------------------- TODO nats .21 --------------------------
+  # -------------------------- TODO etcd .26 --------------------------
+
+  # -------------------------- zookeeper .31 --------------------------
+  all.zookeeper:
+    container_name: "all.zookeeper"
+    image: zookeeper:3.9.1-jre-17
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    restart: unless-stopped
+    networks:
+      all.network: # 自定义网络, 见最下方networks
+        ipv4_address: 172.19.3.31
+
+  # -------------------------- gitea .36 --------------------------
+  all.gitea:
+    container_name: "all.gitea"
+    image: gitea/gitea:nightly
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    restart: always
+    volumes:
+      # 时区配置
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      # 部署文件
+      - /apps/gitea:/data
+    ports:
+      # ssh 端口
+      - "10032:22"
+      # web 访问
+      - "3300:3000"
+    depends_on:
+      - all.gitea.mysql
+    networks:
+      all.network: # 自定义网络, 见最下方networks
+        ipv4_address: 172.19.3.36
+  all.gitea.mysql:
+    container_name: "all.gitea.mysql"
+    image: mysql:8.3.0
+    ports:
+      - "3308:3306"
+    # ---- 映射本地文件到容器中，格式: 宿主地址:容器地址
+    volumes:
+      # 时区配置
+      - /etc/localtime:/etc/localtime:ro
+      # 映射数据库数据文件夹(容器中的数据库文件地址见: my.conf中的 datadir 字段)
+      - /apps/gitea/mysql/data:/var/lib/mysql
+    environment:
+      environment:
+      # 数据库名称
+      MYSQL_DATABASE: gitea
+      # 数据库用户名
+      MYSQL_USER: gitea
+      # 密码，随机产生
+      MYSQL_PASSWORD: sPZAz7gTpEJLrYwi
+      # root 密码
+      MYSQL_ROOT_PASSWORD: DQqCzldqz8WTJEPH
+    ulimits:
+      nproc: 65535
+    restart: unless-stopped
+    networks:
+      all.network: # 自定义网络, 见最下方networks
+        ipv4_address: 172.19.3.37
+
+networks:
+  all.network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.19.3.0/24
