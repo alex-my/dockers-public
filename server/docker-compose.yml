@@ -6,6 +6,8 @@ services:
   # mkdir -p mysql/data
   # mkdir -p gogs/mysql
   # mkdir -p gitea/mysql
+  # mkdir -p registry/registry
+  # mkdir -p registry/auth
   # ---------------------------------------------------------------------------------
 
   # -------------------------- nginx .5 --------------------------
@@ -124,6 +126,22 @@ services:
       all.network: # 自定义网络, 见最下方networks
         ipv4_address: 172.19.3.37
 
+  # -------------------------- registry .41 --------------------------
+  all.docker.registry:
+    container_name: "all.docker.registry"
+    image: registry:3.0.0-alpha.1
+    ports:
+      - "5000:5000"
+    volumes:
+      - /apps/registry/config.yml:/etc/docker/registry/config.yml:ro
+      # 安装: dnf install httpd-tools  / yum install httpd-tools
+      # 生成: htpasswd -Bbn alex hello...alex > /apps/registry/auth/nginx.htpasswd
+      - /apps/registry/auth:/etc/docker/registry/auth
+      - /apps/registry/registry:/var/lib/registry:rw
+    restart: unless-stopped
+    networks:
+      all.network: # 自定义网络, 见最下方networks
+        ipv4_address: 172.19.3.41
 networks:
   all.network:
     driver: bridge
