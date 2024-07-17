@@ -75,7 +75,7 @@ services:
       nproc: 65535
     restart: unless-stopped
     networks:
-      nginx_minigame.network:
+      all.network: # 自定义网络, 见最下方networks
         ipv4_address: 172.19.3.16
   # -------------------------- TODO nats .21 --------------------------
   # -------------------------- TODO etcd .26 --------------------------
