@@ -27,40 +27,39 @@ services:
       MYSQL_REPLICATION_MODE: master
       MYSQL_REPLICATION_USER: replicator
       MYSQL_REPLICATION_PASSWORD: 123456
-
     ulimits:
       nproc: 65535
     restart: unless-stopped
     networks:
       all.network: # 自定义网络, 见最下方networks
         ipv4_address: 172.19.3.11
-  all.mysql.reader1:
-    container_name: "all.mysql.reader1"
-    image: mysql:8.3
-    ports:
-      - "13307:3306"
-    # ---- 映射本地文件到容器中，格式: 宿主地址:容器地址
-    volumes:
-      # 数据库数据文件夹
-      - ./mysql/reader1/data:/var/lib/mysql
-      # 数据库配置
-      # - ./mysql/reader1/conf/my.cnf:/etc/my.cnf
-    environment:
-      # root 密码
-      MYSQL_ROOT_PASSWORD: 123456
-      # 用于数据复制
-      MYSQL_REPLICATION_MODE: slave
-      MYSQL_REPLICATION_USER: replicator
-      MYSQL_REPLICATION_PASSWORD: 123456
-      MYSQL_MASTER_HOST: all.mysql.writer
-      MYSQL_MASTER_PORT_NUMBER: 13306
-      MYSQL_MASTER_ROOT_PASSWORD: 123456
-    ulimits:
-      nproc: 65535
-    restart: unless-stopped
-    networks:
-      all.network: # 自定义网络, 见最下方networks
-        ipv4_address: 172.19.3.12
+  # all.mysql.reader1:
+  #   container_name: "all.mysql.reader1"
+  #   image: mysql:8.0
+  #   ports:
+  #     - "13307:3306"
+  #   # ---- 映射本地文件到容器中，格式: 宿主地址:容器地址
+  #   volumes:
+  #     # 数据库数据文件夹
+  #     - ./mysql/reader1/data:/var/lib/mysql
+  #     # 数据库配置
+  #     - ./mysql/reader1/conf/my.cnf:/etc/my.cnf
+  #   environment:
+  #     # root 密码
+  #     MYSQL_ROOT_PASSWORD: 123456
+  #     # 用于数据复制
+  #     # MYSQL_REPLICATION_MODE: slave
+  #     # MYSQL_REPLICATION_USER: replicator
+  #     # MYSQL_REPLICATION_PASSWORD: 123456
+  #     # MYSQL_MASTER_HOST: all.mysql.writer
+  #     # MYSQL_MASTER_PORT_NUMBER: 13306
+  #     # MYSQL_MASTER_ROOT_PASSWORD: 123456
+  #   ulimits:
+  #     nproc: 65535
+  #   restart: unless-stopped
+  #   networks:
+  #     all.network: # 自定义网络, 见最下方networks
+  #       ipv4_address: 172.19.3.12
   # all.mysql.reader2:
   #   container_name: "all.mysql.reader2"
   #   image: mysql:8.3

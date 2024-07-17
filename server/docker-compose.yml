@@ -58,6 +58,25 @@ services:
         ipv4_address: 172.19.3.11
 
   # -------------------------- TODO redis .16 --------------------------
+  # redis-cli -h 172.19.3.21 -p 11234 -a 5anQKQNwJ3Wiamkg
+  all.redis:
+    container_name: all.redis
+    image: redis:7.2.5
+    command: redis-server
+      --appendonly yes
+      --port 11234
+      --requirepass "5anQKQNwJ3Wiamkg"
+      --dir /data
+      --maxmemory 512mb
+      --maxmemory-policy volatile-ttl
+    ports:
+      - "11234:11234"
+    ulimits:
+      nproc: 65535
+    restart: unless-stopped
+    networks:
+      nginx_minigame.network:
+        ipv4_address: 172.19.3.16
   # -------------------------- TODO nats .21 --------------------------
   # -------------------------- TODO etcd .26 --------------------------
 
